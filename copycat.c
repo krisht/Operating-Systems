@@ -5,16 +5,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEFAULTBUFFER 1024
+#define BUFSIZE 1024
 
 char *oValue = NULL;
 int bValue = -1;
 
 void sysCallFiles(const char* inputFile, int ofd ){
-/*    char data[(bValue == -1) ? DEFAULTBUFFER : bValue];
-    int fd = open(inputFile, O_RDONLY);
-    read(fd, data); // incorrect code
-    close(fd);*/
+    int ifd = (!strcmp(inputFile, "stdin")) ? fileno(stdin) : open(inputFile, O_RDONLY);
+    int len;  
+	if(bValue == -1){
+		char data[BUFSIZE]; 
+        while((len = read(ifd, data, BUFSIZE)) > 0)
+            write(ofd, data, len);
+	}
+	else{
+        char data[bValue];
+        int len = read(ifd, data, bValue); 
+        write(ofd, data, len);
+	}
+    write(ofd, "\n", 1); 
+    close(ifd); 
 }
 
 void processFiles(const int inputStart, int argc, char** argv){
