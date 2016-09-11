@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define DEFAULTBUFFER 1024
 
@@ -18,28 +19,21 @@ int bValue = -1;
 void processFiles(const int inputStart, int argc, char** argv){
 
     const char* oFileName = (oValue == NULL) ? "stdout" : oValue;
-    int ofd = (oFileName == "stdout") ? fileno(stdout) : open(oFileName, O_WRONLY | O_CREAT | O_APPEND, 0666);
-    const char* iFileName = (inputStart == argc) ? "stdin" : NULL;
-    int ifd = (iFileName == "stdin") ? fileno(stdin) : -1;
+    int ofd = (!strcmp(oFileName, "stdout")) ? fileno(stdout) : open(oFileName, O_WRONLY | O_CREAT | O_APPEND, 0666);
+    const char* iFileName = (inputStart == argc) ? "stdin" : "";
+    int ifd = (!strcmp(iFileName, "stdin")) ? fileno(stdin) : -1;
     char data[(bValue == -1) ? DEFAULTBUFFER : bValue];
 
     printf("output: %s\n", oFileName);
 
-    if(ifd != -1){
+    if(ifd != -1)
         printf("input: stdin\n");
-    }
-    else{
+    else
         for(int i = inputStart; i < argc; i++){
-
-            if(argv[i] == "-"){
-                printf("input: stdin\n");
-            }
-            else {
-                printf("input: %s\n",argv[i]);
-            }
-
+            if(!strcmp(argv[i], "-"))
+            	printf("input: stdin\n");
+            else printf("input: %s\n",argv[i]);
         }
-    }
 }
 
 int main(int argc, char** argv){
@@ -48,7 +42,7 @@ int main(int argc, char** argv){
         switch(ch){
             case 'b': 	bValue = atoi(optarg); 		break;
             case 'o': 	oValue = optarg;			break;
-            case '?': 	fprintf(stderr, "usage: copycat [-b ###] [-o outfile] [infile1 infile2 ...]\n");
+            case '?': 	//fprintf(stderr, "usage: copycat [-b ###] [-o outfile] [infile1 infile2 ...]\n");
                 		exit(1);
                 		break;
             default : abort();
