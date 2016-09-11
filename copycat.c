@@ -28,7 +28,7 @@ void sysCallFiles(const char *inputFile, int ofd) {
 
 }
 
-void processFiles(const int inputStart, int argc, char **argv) {
+void processFiles(int inputStart, int argc, char **argv) {
 
     const char *oFileName = (oValue == NULL) ? "stdout" : oValue;
     int ofd = (!strcmp(oFileName, "stdout")) ? fileno(stdout) : open(oFileName, O_WRONLY | O_CREAT | O_APPEND, 0666);
@@ -36,22 +36,14 @@ void processFiles(const int inputStart, int argc, char **argv) {
 
     printf("output: %s\n", oFileName);
 
-    if (!strcmp(iFileName, "stdin")) {
-        printf("input: stdin\n");
+    if (!strcmp(iFileName, "stdin"))
         sysCallFiles("stdin", ofd);
-    }
     else {
         int kk;
-        for (kk = inputStart; kk < argc; kk++) {
-            if (!strcmp(argv[kk], "-")) {
-                printf("input: stdin\n");
+        for (kk = inputStart; kk < argc; kk++)
+            if (!strcmp(argv[kk], "-"))
                 sysCallFiles("stdin", ofd); //why isn't it syscalling again when "-" is indicated
-            }
-            else {
-                printf("input: %s\n", argv[kk]);
-                sysCallFiles(argv[kk], ofd);
-            }
-        }
+            else sysCallFiles(argv[kk], ofd);
     }
     close(ofd);
 }
