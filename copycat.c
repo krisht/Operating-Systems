@@ -8,6 +8,8 @@
 #include <stdlib.h> //contains exit(rval)
 #include <unistd.h> //contains getopt
 
+#define DEFAULTBUFFER 1024
+
 char *oValue = NULL;
 int bValue = -1;
 
@@ -19,45 +21,34 @@ int bValue = -1;
 */
 void processFiles(const int inputStart, int argc, char** argv){
 
-	const char* oFileName = (oValue == NULL) ? "stdout" : oValue; 
-	char* iFileName; 
-	int ifd, ofd; 
-	char data[1028]; 
+	int ifd, ofd;
+    const char* oFileName = (oValue == NULL) ? "stdout" : oValue;
+    char* iFileName = (inputStart == argc) ? "stdin" : NULL; 
+    char data[(bValue == -1) ? DEFAULTBUFFER : bValue];
+
+    if(iFileName == NULL){
+    	
+    }
 
 
-	if(inputStart == argc){
-		ifd = fileno(stdin); 
-		ofd = fileno(stdout);
-		read(ifd, data, 1028); 
-		printf("%s\n", data); 
-	}
-	else{
-		for(int i = inputStart; i < argc; i++){
-			ifd = open(argv[i], O_RDONLY);
-			read(ifd, data, 1); 
-			printf("%s\n", data);  
-			printf("Input: %s\n", argv[i]);
-			printf("Input: %d\n", ifd); 
-		}
-	}
 }
 
 int main(int argc, char** argv){
-	int ch; 
-	while((ch = getopt(argc, argv, "b:o:")) != -1)
-		switch(ch){
-			case 'b': 	bValue = atoi(optarg); 		break;
-			case 'o': 	oValue = optarg;			break;
-			case '?': 	fprintf(stderr, "usage: copycat [-b ###] [-o outfile] [infile1 infile2 ...]\n");
-						exit(1); 
-						break; 
-			default : abort(); 
-		}
 
-	processFiles(optind, argc, argv); 
+    int ch;
+    while((ch = getopt(argc, argv, "b:o:")) != -1)
+        switch(ch){
+            case 'b': 	bValue = atoi(optarg); 		break;
+            case 'o': 	oValue = optarg;			break;
+            case '?': 	fprintf(stderr, "usage: copycat [-b ###] [-o outfile] [infile1 infile2 ...]\n");
+                exit(1);
+                break;
+            default : abort();
+        }
 
-	if(fclose(stdout))
-		err(1, "stdout"); 
-	exit(0); 
+    processFiles(optind, argc, argv);
+
+    if(fclose(stdout))
+        err(1, "stdout");
+    exit(0);
 }
-
