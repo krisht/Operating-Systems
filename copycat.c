@@ -10,29 +10,35 @@
 char *oValue = NULL;
 int bValue = -1;
 
-/**
-* Processes files according to description given the following
-* @param inputStart start index of the input files
-* @param argc       count of arguments supplied
-* @param argv       values of the arguments supplied
-*/
+void sysCallFiles(const char* inputFile, int ofd ){
+/*    char data[(bValue == -1) ? DEFAULTBUFFER : bValue];
+    int fd = open(inputFile, O_RDONLY);
+    read(fd, data); // incorrect code
+    close(fd);*/
+}
+
 void processFiles(const int inputStart, int argc, char** argv){
 
     const char* oFileName = (oValue == NULL) ? "stdout" : oValue;
     int ofd = (!strcmp(oFileName, "stdout")) ? fileno(stdout) : open(oFileName, O_WRONLY | O_CREAT | O_APPEND, 0666);
     const char* iFileName = (inputStart == argc) ? "stdin" : "";
-    int ifd = (!strcmp(iFileName, "stdin")) ? fileno(stdin) : -1;
-    char data[(bValue == -1) ? DEFAULTBUFFER : bValue];
 
     printf("output: %s\n", oFileName);
 
-    if(ifd != -1)
+    if(!strcmp(iFileName, "stdin")){
         printf("input: stdin\n");
+        sysCallFiles("stdin", ofd);
+    }
     else
         for(int i = inputStart; i < argc; i++){
-            if(!strcmp(argv[i], "-"))
-            	printf("input: stdin\n");
-            else printf("input: %s\n",argv[i]);
+            if(!strcmp(argv[i], "-")){
+                printf("input: stdin\n");
+                sysCallFiles("stdin", ofd);
+            }
+            else{
+                printf("input: %s\n",argv[i]);
+                sysCallFiles(argv[i], ofd);
+            }
         }
 }
 
@@ -42,9 +48,7 @@ int main(int argc, char** argv){
         switch(ch){
             case 'b': 	bValue = atoi(optarg); 		break;
             case 'o': 	oValue = optarg;			break;
-            case '?': 	//fprintf(stderr, "usage: copycat [-b ###] [-o outfile] [infile1 infile2 ...]\n");
-                		exit(1);
-                		break;
+            case '?': 	exit(1); //fprintf(stderr, "usage: copycat [-b ###] [-o outfile] [infile1 infile2 ...]\n");
             default : abort();
         }
 
