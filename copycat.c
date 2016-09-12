@@ -11,9 +11,10 @@ char *oValue = NULL;
 int bValue = -1;
 
 void sysCallFiles(const char *inputFile, int ofd) {
-    int ifd = (!strcmp(inputFile, "stdin")) ? fileno(stdin) : open(inputFile, O_RDONLY);
+    int ifd = (!strcmp(inputFile, "stdin")) ? STDIN_FILENO : open(inputFile, O_RDONLY);
     int len;
     if (bValue == -1) {
+
         char data[DFLT_BUF_SIZE];
         while ((len = read(ifd, data, DFLT_BUF_SIZE)) > 0)
             write(ofd, data, len);
@@ -23,18 +24,14 @@ void sysCallFiles(const char *inputFile, int ofd) {
         len = read(ifd, data, bValue);
         write(ofd, data, len);
     }
-    write(ofd, "\n", 1);
     close(ifd);
-
 }
 
 void processFiles(int inputStart, int argc, char **argv) {
 
     const char *oFileName = (oValue == NULL) ? "stdout" : oValue;
-    int ofd = (!strcmp(oFileName, "stdout")) ? fileno(stdout) : open(oFileName, O_WRONLY | O_CREAT | O_APPEND, 0666);
+    int ofd = (!strcmp(oFileName, "stdout")) ? STDOUT_FILENO : open(oFileName, O_WRONLY | O_CREAT | O_APPEND, 0666);
     const char *iFileName = (inputStart == argc) ? "stdin" : "";
-
-    printf("output: %s\n", oFileName);
 
     if (!strcmp(iFileName, "stdin"))
         sysCallFiles("stdin", ofd);
@@ -45,7 +42,8 @@ void processFiles(int inputStart, int argc, char **argv) {
                 sysCallFiles("stdin", ofd); //why isn't it syscalling again when "-" is indicated
             else sysCallFiles(argv[kk], ofd);
     }
-    close(ofd);
+    if(ofd != STDOUT_FILENO)
+        close(ofd);
 }
 
 int main(int argc, char **argv) {
@@ -66,7 +64,7 @@ int main(int argc, char **argv) {
 
     processFiles(optind, argc, argv);
 
-    if (fclose(stdout))
+    if (close(STDOUT_FILENO))
         err(1, "stdout");
     exit(0);
 }
