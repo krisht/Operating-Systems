@@ -5,48 +5,48 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DFLT_BUF_SIZE 1024
+int bValue = 1024;
 
-char *oValue = NULL;
-int bValue = -1;
-
-void sysCallFiles(const char *inputFile, int ofd) {
-    int ifd = (!strcmp(inputFile, "stdin")) ? STDIN_FILENO : open(inputFile, O_RDONLY);
-    int len;
-    if (bValue == -1) {
-
-        char data[DFLT_BUF_SIZE];
-        while ((len = read(ifd, data, DFLT_BUF_SIZE)) > 0)
-            write(ofd, data, len);
-    }
-    else {
-        char data[bValue];
-        len = read(ifd, data, bValue);
-        write(ofd, data, len);
-    }
-    close(ifd);
+void exitProgram(const char *str, int retval) {
+    perror(str);
+    exit(retval);
 }
 
-void processFiles(int inputStart, int argc, char **argv) {
+void sysCallFiles(const char *inputFile, int ofd) {
+    int len, ifd = (!strcmp(inputFile, "-")) ? STDIN_FILENO : open(inputFile, O_RDONLY);
+    char data[bValue];
+    if (ifd < 0)
+        exitProgram(inputFile, -1);
+    while ((len = read(ifd, data, bValue)) > 0 && len != -1)
+        write(ofd, data, len);
 
-    const char *oFileName = (oValue == NULL) ? "stdout" : oValue;
-    int ofd = (!strcmp(oFileName, "stdout")) ? STDOUT_FILENO : open(oFileName, O_WRONLY | O_CREAT | O_APPEND, 0666);
-    const char *iFileName = (inputStart == argc) ? "stdin" : "";
+    if(len == -1)
+        exitProgram(inputFile, -1);
+    if(close(ifd) == -1)
+        exitProgram(inputFile, -1);
 
-    if (!strcmp(iFileName, "stdin"))
-        sysCallFiles("stdin", ofd);
-    else {
-        int kk;
+}
+
+void processFiles(const char *oValue, int inputStart, int argc, char **argv) {
+    int kk, ofd = (oValue == NULL) ? STDOUT_FILENO : open(oValue, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+
+    if (ofd < 0)
+        exitProgram(oValue, -1);
+
+    if (argc == inputStart)
+        sysCallFiles("-", ofd);
+    else
         for (kk = inputStart; kk < argc; kk++)
-            if (!strcmp(argv[kk], "-"))
-                sysCallFiles("stdin", ofd); //why isn't it syscalling again when "-" is indicated
-            else sysCallFiles(argv[kk], ofd);
-    }
-    if(ofd != STDOUT_FILENO)
-        close(ofd);
+            sysCallFiles(argv[kk], ofd);
+
+    if (ofd != STDOUT_FILENO && close(ofd) == -1)
+        exitProgram(oValue, -1);
+     /*   if(close(ofd) == -1)
+            exitProgram(oValue, -1);*/
 }
 
 int main(int argc, char **argv) {
+    char *oValue = NULL;
     int ch;
     while ((ch = getopt(argc, argv, "b:o:")) != -1)
         switch (ch) {
@@ -57,12 +57,12 @@ int main(int argc, char **argv) {
                 oValue = optarg;
                 break;
             case '?':
-                exit(1); //fprintf(stderr, "usage: copycat [-b ###] [-o outfile] [infile1 infile2 ...]\n");
+                exit(-1);
             default :
                 abort();
         }
 
-    processFiles(optind, argc, argv);
+    processFiles(oValue, optind, argc, argv);
 
     if (close(STDOUT_FILENO))
         err(1, "stdout");
