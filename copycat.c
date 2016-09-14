@@ -52,5 +52,5 @@ int main(int argc, char **argv) {
     processFiles(optind, argc, argv);
     if (close(STDOUT_FILENO))
         exitProgram("stdout", -1); 
-    exit(0);
+    return 0; 
 }
