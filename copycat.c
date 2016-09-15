@@ -16,13 +16,11 @@ void exitProgram(const char *str, int retval) {
 void sysCallFiles(const char *inputFile, int ofd) {
     int len, ifd = (!strcmp(inputFile, "-")) ? STDIN_FILENO : open(inputFile, O_RDONLY);
     char data[bValue];
-    if (ifd < 0){
+    if (ifd < 0)
         exitProgram(inputFile, -1);
-    }
     while ((len = read(ifd, data, bValue)) > 0 && len != -1)
-        if(write(ofd, data, len) < 0){
+        if(write(ofd, data, len) < 0)
         	exitProgram(oValue, -1);
-        }
     if(len == -1)
         exitProgram(inputFile, -1);
     if(ifd != STDIN_FILENO && close(ifd) == -1)
