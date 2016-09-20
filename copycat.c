@@ -1,3 +1,10 @@
+/**
+ * Name:	Krishna Thiyagarajan
+ * Date: 	Wednesday, September 21, 2016
+ * Class:	ECE-357: Operating Systems
+ * Prof.: 	Jeff Hakner
+ * P.Set:	System Calls
+ */
 #include <stdio.h>
 #include <err.h>
 #include <fcntl.h>
@@ -16,7 +23,7 @@ char* oValue = NULL;  //Default output file value. Changes if -o is specified
  * @param fName    Optional filename
  */
 void exitProgram(const char *place, int errornum,  const char *fName="") {
-    fprintf(stderr, "Error in %s('%s') with err %d: %s.\n", place, fName, errornum, strerror(errornum));
+    fprintf(stderr, "Error in %s('%s') with err #%d: %s.\n", place, fName, errornum, strerror(errornum));
     exit(-1);
 }
 
@@ -30,11 +37,15 @@ void sysCallFiles(const char *inputFile, int ofd) {
     char data[bValue];
     if (ifd < 0)
         exitProgram("open", errno, inputFile);
-    while ((len = read(ifd, data, bValue)) > 0 && len != -1)
-        if((wlen = write(ofd, data, len))< 0)
-        	if(wlen < len)
-        		exitProgram("write", errno); 
-        	else exitProgram("write", errno);
+    while((len = read(ifd, data, bValue)) > 0 && len!=-1)
+    	if((wlen = write(ofd, data, len)) < 0)
+    		exitProgram("write", errno, (oValue != NULL) ? oValue : "stdout");
+    	else if(wlen < len)
+    			for(int i = wlen; i < len; i++){
+					char newData[1] = {data[i]};
+					if(write(ofd, newData, 1) < 0)
+						exitProgram("write", errno, (oValue !=NULL ? oValue: "stdout")); 
+				}
     if(len == -1)
         exitProgram("read", errno,  inputFile);
     if(ifd != STDIN_FILENO && close(ifd) == -1)
@@ -61,16 +72,16 @@ void processFiles(int inputStart, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-    int ch;
+    char ch;
     while ((ch = getopt(argc, argv, "b:o:")) != -1)
         switch (ch) {
-            case 'b':	bValue = atoi(optarg);	break;
-            case 'o':	oValue = optarg;		break;
-            case '?':	exit(-1);
+            case 'b':	bValue = atoi(optarg);	break; 
+            case 'o':	oValue = optarg; 		break;
+            case '?':	exit(-1); 
             default :	abort();
         }
     processFiles(optind, argc, argv);
     if (close(STDOUT_FILENO))
         exitProgram("close", errno, "stdout"); 
-    return 0; 
+    exit(0);  
 }
