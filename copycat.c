@@ -3,7 +3,7 @@
  * Date: 	Wednesday, September 21, 2016
  * Class:	ECE-357: Operating Systems
  * Prof.: 	Jeff Hakner
- * P.Set:	System Calls
+ * P.Set:	#1: System Calls
  */
 #include <stdio.h>
 #include <err.h>
@@ -14,7 +14,7 @@
 #include <errno.h>
 
 int bValue = 1024; //Default byte value. Changes if -b is specified
-char* oValue = NULL;  //Default output file value. Changes if -o is specified
+char* oValue = "stdout";  //Default output file value. Changes if -o is specified
 
 /**
  * Exits program given error description
@@ -39,12 +39,12 @@ void sysCallFiles(const char *inputFile, int ofd) {
         exitProgram("open", errno, inputFile);
     while((len = read(ifd, data, bValue)) > 0 && len!=-1)
     	if((wlen = write(ofd, data, len)) < 0)
-    		exitProgram("write", errno, (oValue != NULL) ? oValue : "stdout");
+    		exitProgram("write", errno, oValue);
     	else if(wlen < len)
     			for(int i = wlen; i < len; i++){
 					char newData[1] = {data[i]};
 					if(write(ofd, newData, 1) < 0)
-						exitProgram("write", errno, (oValue !=NULL ? oValue: "stdout")); 
+						exitProgram("write", errno, oValue); 
 				}
     if(len == -1)
         exitProgram("read", errno,  inputFile);
@@ -59,7 +59,7 @@ void sysCallFiles(const char *inputFile, int ofd) {
  * @param argv       Value of arguments from main
  */
 void processFiles(int inputStart, int argc, char **argv) {
-    int kk, ofd = (oValue == NULL) ? STDOUT_FILENO : open(oValue, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    int kk, ofd = (!strcmp(oValue, "stdout")) ? STDOUT_FILENO : open(oValue, O_WRONLY | O_CREAT | O_TRUNC, 0666);
     if (ofd < 0)
         exitProgram("open", errno,  oValue);
     if (argc == inputStart)
