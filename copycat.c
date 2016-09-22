@@ -13,31 +13,38 @@
 int bValue = 1024; 			//Default byte value. Changes if -b is specified
 char *oValue = "stdout";	//Default output file value. Changes if -o is specified
 
+void usage(void)
+{
+	fprintf(stderr, "usage: copycat [-b ###] [-o outfile] [infile ...]\n");
+	exit(-1);
+}
+
 // Exits program given error description
 void exitProgram(const char *func, int errornum, const char *fName = "") {
-    fprintf(stderr, "Error in %s('%s') with errno %d: %s.\n", func, fName, errornum, sterror(errornum));
+    fprintf(stderr, "Error in %s('%s') with errno %d: %s.\n", func, fName, errornum, strerror(errornum));
     exit(-1);
 }
 
 // Function that syscalls inputFile and writes to output file descriptor
 void sysCallFiles(const char *inputFile, int ofd) {
 	int ifd = (!strcmp(inputFile, "-")) ? STDIN_FILENO : open(inputFile, O_RDONLY);
-    int len, wlen, wRes; 
+    int len, wlen, wRes, nwlen; 
     char data[bValue];
     
     if (ifd < 0)
         exitProgram("open", errno, inputFile);
     
     while ((len = read(ifd, data, bValue)) > 0 && len != -1)
-        if ((wlen = write(ofd, data, len)) < 0)
+        if ((wlen = write(ofd, data, len)) <= 0)
             exitProgram("write", errno, oValue);
         else if (wlen < len)
-            for (int i = wlen; i < len; i++) {
-                char newData[1] = {data[i]};
-                
-                if (write(ofd, newData, 1) < 0)
-                    exitProgram("write", errno, oValue);
-            }
+        	while(1){
+        		if((nwlen = write(ofd, &data[wlen], len - wlen)) <= 0)
+        			exitProgram("write", errno, oValue);
+        		wlen+=nwlen;
+        		if(wlen == len)
+        			break; 
+        	}
     
     if (len == -1)
         exitProgram("read", errno, inputFile);
@@ -72,7 +79,7 @@ int main(int argc, char **argv) {
             case 'b': 	bValue = atoi(optarg);		break;
             case 'o': 	oValue = optarg;			break;
             case '?':	exit(-1);
-            default :	abort();
+            default :	usage();
         }
 
     processFiles(optind, argc, argv);
