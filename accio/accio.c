@@ -11,8 +11,15 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
-#include <iostream>
-using namespace std;
+#include <unistd.h>
+#include <stdio.h>
+#include <time.h>
+char* user = NULL; 
+int mounttime = 0; 
+int xValue = 0; 
+char* targetValue = NULL;   
+const char* startDir; 
+
 
 
 void usage(void) {
@@ -27,6 +34,9 @@ void findStats(const char *fileName) {
         perror("stat");
         exit(-1);
     }
+
+
+
     char type;
 
     switch (sb.st_mode & S_IFMT) {
@@ -69,20 +79,31 @@ void findStats(const char *fileName) {
     struct tm *p = localtime(&t);
     strftime(s, 1000, "%x %X", p);
 
-    char *linksTo; 
+    if(type == 'l'){
+    	char* linksTo = (char*)malloc(sb.st_size + 1); 
+	    if(linksTo == NULL){
+	    	fprintf(stderr, "Insufficient memory!\n"); 
+	    	exit(EXIT_FAILURE); 
+	    }
+	    int r; 
+	    if((r = readlink(fileName, linksTo, sb.st_size + 1)) == -1){
+	    	perror("lstat"); 
+	    	exit(EXIT_FAILURE); 
+	    }
+	    if (r > sb.st_size) {
+        	fprintf(stderr, "symlink increased in size "
+                               "between lstat() and readlink()\n");
+            exit(EXIT_FAILURE);
+        }
+        linksTo[r] = '\0';  
 
-
-
-
-    if(type == 'l')
-        readlink(fileName, linksTo, PATH_MAX); 
-    else linksTo = "": 
-
-
-    linksTo = type == 'l' ? 
+    	printf("%04x/%-10d %2c %7ld %10d %10s %10s %10d %10s %s -> %s\n", devid, inNum, type, perm, lnkcnt,
+           getpwuid(sb.st_uid)->pw_name, getgrgid(sb.st_gid)->gr_name, size, s, fileName, linksTo);
+    	free(linksTo); 
+    }
+    else
     printf("%04x/%-10d %2c %7ld %10d %10s %10s %10d %10s %s\n", devid, inNum, type, perm, lnkcnt,
-           getpwuid(sb.st_uid)->pw_name, getgrgid(sb.st_gid)->gr_name, size, s, fileName); //make it so that the user number is returned if username is not found
-
+           getpwuid(sb.st_uid)->pw_name, getgrgid(sb.st_gid)->gr_name, size, s, fileName);
 }
 
 void fileWalker(const char *dir_name) {
@@ -110,7 +131,7 @@ void fileWalker(const char *dir_name) {
 
         findStats(path);
 
-        if (entry->d_type & DT_DIR)
+        if (entry->d_type == DT_DIR && entry->d_type != DT_SOCK)
             if (strcmp (d_name, "..") != 0 && strcmp (d_name, ".") != 0)
                 fileWalker (path);
     }
@@ -122,12 +143,19 @@ void fileWalker(const char *dir_name) {
 
 
 int main(int argc, char **argv) {
+    char ch; 
+	while ((ch = getopt(argc, argv, ":xu:m:l:")) != -1)
+        switch (ch) {
+        	case 'u': 	user = optarg; break;
+        	case 'm':	mounttime = atoi(optarg); break;
+        	case 'x':	xValue = 1; break;
+            case 'l': 	targetValue = optarg; 		break;
+            case ':': 	printf("Input expeced at -%c!\n", optopt); break;
+            case '?':	exit(-1); break; 
+            default :	usage();
+        }
 
-    if (argc < 1) {
-        usage();
-        exit(-1);
-    }
-
-    fileWalker("/home/krishna/Desktop");
-    exit(0);
+        startDir = optind == argc ? "." : argv[optind]; 
+        fileWalker(startDir);
+        exit(0);
 }
