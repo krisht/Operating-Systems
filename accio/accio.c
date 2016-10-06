@@ -24,7 +24,7 @@ int devNum = -1;
 
 void usage(void) {
     fprintf(stderr, "usage: accio [-u user] [-m mtime] [-l target] [-x]\n");
-    exit(-1);
+    exit(EXIT_FAILURE);
 }
 
 void exitWithError(const char *format, ...) {
@@ -42,15 +42,16 @@ void findStats(const char *fileName) {
         exitWithError("lstat() could not find statistics of %s: %s.\n", fileName, errno, strerror(errno));
 
     char type;
+    //Detects filemode
     switch (sb.st_mode & S_IFMT) {
-        case S_IFBLK:	type = 'b';	break;
-        case S_IFCHR:	type = 'c';	break;
-        case S_IFDIR:	type = 'd';	break;
-        case S_IFIFO:	type = 'p';	break;
-        case S_IFLNK:	type = 'l';	break;
-        case S_IFREG:	type = '-';	break;
-        case S_IFSOCK:	type = 's';	break;
-        default: exitWithError("Unknown file type detected. Detected file is #%d\n", sb.st_mode & S_IFMT);
+        case S_IFBLK:   type = 'b'; break;
+        case S_IFCHR:   type = 'c'; break;
+        case S_IFDIR:   type = 'd'; break;
+        case S_IFIFO:   type = 'p'; break;
+        case S_IFLNK:   type = 'l'; break;
+        case S_IFREG:   type = '-'; break;
+        case S_IFSOCK:  type = 's'; break;
+        default: exitWithError("Unknown file type detected. Detected mode is #%d\n", sb.st_mode & S_IFMT);
     }
 
     //Retrieval of node information from struct stat
@@ -62,22 +63,26 @@ void findStats(const char *fileName) {
     char *gname = getgrgid(sb.st_gid)->gr_name;
     int size = (int) sb.st_size;
 
-    devNum = (devNum == -1) ? devid : devNum; //
+    devNum = (devNum == -1) ? devid : devNum; //Logs device start location on first call to findStats()
 
     char s[1000];
     time_t t = sb.st_mtime;
     struct tm *p = localtime(&t);
     strftime(s, 1000, "%x %X", p);
 
+    //Checks if uFlag is present and does appropriate things
     if (uFlag)
-    if (atoi(uValue) == 0 && !strcmp(uValue, "0")) {
-        struct passwd *temp = getpwnam(uValue);
-        if (temp == NULL || temp->pw_uid != uid)
-            return;
-    }
-    else if (uid != atoi(uValue))
-        return;
+	    if (atoi(uValue) == 0 && strcmp(uValue, "0")) {
+	        struct passwd *temp = getpwnam(uValue);
+	        if (temp == NULL || temp->pw_uid != uid)
+	            return;
+	    }
+	    else{
+	    	if (uid != atoi(uValue))
+	    		return; 
+	    }
 
+	//Checks for mFlag and does appropriate calculations
     if (mFlag) {
         time_t currTime;
         time(&currTime);
@@ -88,20 +93,25 @@ void findStats(const char *fileName) {
             return;
     }
 
+    //Checks for fFlay and does appropriate things
     if (xFlag && devid != devNum) {
         fprintf(stderr, "note: not crossing mount point at %s", fileName);
         return;
     }
 
+    //If lFlag is present and file type is not l, we skip it
     if (lFlag && type != 'l')
         return;
 
+    //Gets all permissions of files in string format
     char permissions[] = {type, (sb.st_mode & S_IRUSR) ? 'r' : '-', (sb.st_mode & S_IWUSR) ? 'w' : '-',
                           (sb.st_mode & S_IXUSR) ? 'x' : '-', (sb.st_mode & S_IRGRP) ? 'r' : '-',
                           (sb.st_mode & S_IWGRP) ? 'w' : '-', (sb.st_mode & S_IXGRP) ? 'x' : '-',
                           (sb.st_mode & S_IROTH) ? 'r' : '-', (sb.st_mode & S_IWOTH) ? 'w' : '-',
                           (sb.st_mode & S_IXOTH) ? 'x' : '-', '\0'};
 
+
+    //If the type is a link, displays it differently
     if (type == 'l') {
         char *linksTo = (char *) malloc(sb.st_size + 1);
         int r;
@@ -115,8 +125,9 @@ void findStats(const char *fileName) {
         if (r > sb.st_size)
             exitWithError("Symlink increased in size between lstat() and readlink() with file %s\n", fileName);
 
-        linksTo[r] = '\0';
+        linksTo[r] = '\0'; //Null terminates link path
 
+        //Checks for lFlag and checks if links match
         if (lFlag) {
             struct stat temp;
             struct stat temp2;
@@ -135,11 +146,11 @@ void findStats(const char *fileName) {
 }
 
 void fileWalker(const char *dir_name) {
-    DIR *d = opendir(dir_name);
-
+    DIR *d = opendir(dir_name); //tries to open directory. If it's  file, it fails
     if (!d)
         exitWithError("opendir() cannot open directory '%s': %s\n", dir_name, strerror(errno));
 
+    //Looks at each entry in directory and recurses if necessary
     while (1) {
         struct dirent *entry;
         const char *d_name;
@@ -148,8 +159,8 @@ void fileWalker(const char *dir_name) {
             break;
         d_name = entry->d_name;
 
-        if(!strcmp(d_name, ".."))
-            continue;
+/*        if(!strcmp(d_name, ".."))
+            continue;*/
 
         int path_length;
         char path[PATH_MAX];
@@ -159,8 +170,8 @@ void fileWalker(const char *dir_name) {
         findStats(path);
 
         if (entry->d_type == DT_DIR && entry->d_type != DT_SOCK)
-        if (strcmp(d_name, "..") != 0 && strcmp(d_name, ".") != 0)
-            fileWalker(path);
+	        if (strcmp(d_name, "..") != 0 && strcmp(d_name, ".") != 0)
+	            fileWalker(path);
     }
     if (closedir(d))
         exitWithError("closedir() could not close '%s': %s\n", dir_name, strerror(errno));
