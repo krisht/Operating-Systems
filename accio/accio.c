@@ -150,6 +150,10 @@ void fileWalker(const char *dir_name) {
         if (!entry)
             break;
         d_name = entry->d_name;
+
+        if(!strcmp(d_name, ".."))
+            continue; 
+
         int path_length;
         char path[PATH_MAX];
         path_length = snprintf(path, PATH_MAX, "%s/%s", dir_name, d_name);
@@ -157,9 +161,9 @@ void fileWalker(const char *dir_name) {
             exitWithError("Path length has got too long!\n");
         findStats(path);
 
-        if (entry->d_type == DT_DIR && entry->d_type != DT_SOCK) if (strcmp(d_name, "..") != 0 &&
-                                                                     strcmp(d_name, ".") != 0)
-            fileWalker(path);
+        if (entry->d_type == DT_DIR && entry->d_type != DT_SOCK) 
+            if (strcmp(d_name, "..") != 0 && strcmp(d_name, ".") != 0)
+                fileWalker(path);
     }
     if (closedir(d))
         exitWithError("could nt close '%s': %s\n", dir_name, strerror(errno));
