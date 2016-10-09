@@ -1,4 +1,5 @@
-# ECE-357 Operating Systems: Completed projects compiled from The Cooper Union's course running in Fall '16
+# ECE-357 Operating Systems: Completed Projects Compiled 
+# Fall 2016 - The Cooper Union - Prof. Jeff Hakner
 
 ./copycat - Contains a simple implementation of Linux user command "cat"
 
