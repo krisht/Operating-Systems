@@ -1,5 +1,4 @@
-# operatingsystems
-# Completed assignments compiled from ECE-357: Operating Systems running in Fall 2016
+# ECE-357 Operating Systems: Completed projects compiled from The Cooper Union's course running in Fall '16
 
 ./copycat - Contains a simple implementation of Linux user command "cat"
 
