@@ -87,9 +87,9 @@ void findStats(const char *fileName) {
         time_t currTime;
         time(&currTime);
         double diff_t = difftime(currTime, t);
-        if (mValue > 0 && diff_t > abs(mValue))
+        if (mValue < 0 && diff_t > abs(mValue))
             return;
-        if (mValue < 0 && diff_t < abs(mValue))
+        if (mValue > 0 && diff_t < abs(mValue))
             return;
     }
 
@@ -159,8 +159,8 @@ void fileWalker(const char *dir_name) {
             break;
         d_name = entry->d_name;
 
-/*        if(!strcmp(d_name, ".."))
-            continue;*/
+        //if(!strcmp(d_name, ".."))
+        //    continue;
 
         int path_length;
         char path[PATH_MAX];
