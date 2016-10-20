@@ -10,6 +10,8 @@
 #include <sys/wait.h>
 #include <stdarg.h>
 
+#define DEBUG_MODE 0
+
 //Error reporting and exit function
 void specialExit(const char *retVal, const char *format, ...) {
     va_list arg;
@@ -82,7 +84,7 @@ int forkProcess(int redirArgC, char **redirArgV, char **rawArgV, char **cmdArgV)
             int kk, fd, fileNum;
             printf("%s", redirArgV[0]);
             for (kk = 0; kk < redirArgC; ++kk) {
-                char * fileName = NULL;
+                char *fileName = NULL;
                 if (redirArgV[kk][0] == '<') {
                     // Redirect stdin
                     fileName = redirArgV[kk];
@@ -141,12 +143,16 @@ int forkProcess(int redirArgC, char **redirArgV, char **rawArgV, char **cmdArgV)
             if (gettimeofday(&endTime, NULL) < 0)
                 specialExit("1", "Error with getting end time: %s\n", strerror(errno));
 
-            int realsecdiff = (int) (endTime.tv_sec - startTime.tv_sec);
-            int realmicrodiff = (int) (endTime.tv_usec - startTime.tv_usec);
-            printf("Command returned with return code %d,\n", WEXITSTATUS(status));
-            printf("consuming %01d.%03d real, %01d.%03d user, %01d.%03d system seconds.\n", realsecdiff, realmicrodiff,
-                   (int) resUsage.ru_utime.tv_sec, (int) resUsage.ru_utime.tv_usec, (int) resUsage.ru_stime.tv_sec,
-                   (int) resUsage.ru_stime.tv_usec);
+            double rTimeDiff, uTimeDiff, sTimeDiff;
+
+
+            rTimeDiff = (((endTime.tv_sec - startTime.tv_sec) * 1000000 + endTime.tv_usec) - startTime.tv_usec) /
+                        1000000.0;
+            uTimeDiff = (resUsage.ru_utime.tv_sec * 1000000L + resUsage.ru_utime.tv_usec) / 1000000.0;
+            sTimeDiff = (resUsage.ru_stime.tv_sec * 1000000L + resUsage.ru_stime.tv_usec) / 1000000.0;
+
+            printf("\n[Finished with exit code %d]\n", WEXITSTATUS(status));
+            printf("Real: %03lfs, User: %03lfs, System: %03lfs\n", rTimeDiff, uTimeDiff, sTimeDiff);
 
     }
 }
@@ -161,7 +167,6 @@ void execCmd(char *line) {
         int kk;
         for (kk = 0; kk <= cmdArgC; kk++)
             cmdArgV[kk] = rawArgV[kk]; // Add arg to cmdArgV
-
         cmdArgV[cmdArgC] = 0; //Add null terminator
     }
 
@@ -171,14 +176,13 @@ void execCmd(char *line) {
         int kk;
         for (kk = 0; kk <= redirArgC; kk++)
             redirArgV[kk] = rawArgV[kk + cmdArgC];
-
-        //Add another arg to redirArgV but offset by cmdArgC to jump past cmd args'
     }
 
-    //Display info about command exec
-
-    if (rawArgV == NULL)
+    if (rawArgV == NULL) // if line is empty skip line
         return;
+
+
+#if(DEBUG_MODE==1)
 
     printf("Executing command %s with arguments \"", rawArgV[0]);
 
@@ -193,7 +197,6 @@ void execCmd(char *line) {
         }
     }
 
-
     if (redirArgC > 0) {
         int kk;
         for (kk = 0; kk < redirArgC; kk++) {
@@ -203,13 +206,13 @@ void execCmd(char *line) {
         }
     }
     printf("\"\n");
+#endif
 
     forkProcess(redirArgC, redirArgV, rawArgV, cmdArgV);
 
     free(rawArgV);
     free(cmdArgV);
     free(redirArgV);
-    return;
 }
 
 int main(int argc, char **argv) {
