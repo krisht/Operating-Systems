@@ -1,3 +1,8 @@
+/**
+ * Name:	Krishna Thiyagarajan
+ * Class:	ECE-357: Operating Systems
+ * P.Set:	#3: The Shell
+ */
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -83,22 +88,33 @@ int forkProcess(int redirArgC, char **redirArgV, char **rawArgV, char **cmdArgV)
             for (kk = 0; kk < redirArgC; kk++) {
                 char *fileName = NULL;
                 if (redirArgV[kk][0] == '<') { //Redirect STDIN
+
                     fileName = redirArgV[kk] + 1; //Offset to find filename is 1
                     fd = open(fileName, O_RDONLY);
                     fileNum = STDIN_FILENO;
+
                 } else if (redirArgV[kk][0] == '>' && redirArgV[kk][1] != '>') { // Redirect stdout (open/creat/trunc)
+
                     fileName = redirArgV[kk] + 1;
                     fd = open(fileName, O_WRONLY | O_TRUNC | O_CREAT, S_IREAD | S_IWRITE);
                     fileNum = STDOUT_FILENO;
-                } else if (redirArgV[kk][0] == '2' && redirArgV[kk][1] == '>' && redirArgV[kk][2] != '>') { // Redirect stderr (open/creat/trunc)
+
+                } else if (redirArgV[kk][0] == '2' && redirArgV[kk][1] == '>' &&
+                           redirArgV[kk][2] != '>') { // Redirect stderr (open/creat/trunc)
+
                     fileName = redirArgV[kk] + 2; //Offset to find filename is 2
                     fd = open(fileName, O_WRONLY | O_TRUNC | O_CREAT, S_IREAD | S_IWRITE);
                     fileNum = STDERR_FILENO;
+
                 } else if (redirArgV[kk][0] == '>' && redirArgV[kk][1] == '>') {//Redirect stdout (open/creat/append)
+
                     fileName = redirArgV[kk] + 2;
                     fd = open(fileName, O_WRONLY | O_APPEND | O_CREAT, S_IREAD | S_IWRITE);
                     fileNum = STDOUT_FILENO;
-                } else if (redirArgV[kk][0] == '2' && redirArgV[kk][1] == '>' && redirArgV[kk][2] == '>') { //Redirect stderr (open/creat/append)
+
+                } else if (redirArgV[kk][0] == '2' && redirArgV[kk][1] == '>' &&
+                           redirArgV[kk][2] == '>') { //Redirect stderr (open/creat/append)
+
                     fileName = redirArgV[kk] + 3; //Offset to find filename is 3
                     fd = open(fileName, O_WRONLY | O_APPEND | O_CREAT, S_IREAD | S_IWRITE);
                     fileNum = STDERR_FILENO;
