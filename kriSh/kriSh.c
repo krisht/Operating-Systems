@@ -143,7 +143,7 @@ int forkProcess(int redirArgC, char **redirArgV, char **rawArgV, char **cmdArgV)
 
             int realsecdiff = (int) (endTime.tv_sec - startTime.tv_sec);
             int realmicrodiff = (int) (endTime.tv_usec - startTime.tv_usec);
-            printf("Command returned with return code %d,\n", WEXITSTATUS(status));
+            printf("Cozmmand returned with return code %d,\n", WEXITSTATUS(status));
             printf("consuming %01d.%03d real, %01d.%03d user, %01d.%03d system seconds.\n", realsecdiff, realmicrodiff,
                    (int) resUsage.ru_utime.tv_sec, (int) resUsage.ru_utime.tv_usec, (int) resUsage.ru_stime.tv_sec,
                    (int) resUsage.ru_stime.tv_usec);
