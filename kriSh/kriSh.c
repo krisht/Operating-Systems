@@ -142,14 +142,6 @@ int forkProcess(int redirArgC, char **redirArgV, char **rawArgV, char **cmdArgV)
             if (gettimeofday(&endTime, NULL) < 0) //Find ending time
                 specialExit("1", "Error with getting end time: %s\n", strerror(errno));
 
-<<<<<<< HEAD
-            int realsecdiff = (int) (endTime.tv_sec - startTime.tv_sec);
-            int realmicrodiff = (int) (endTime.tv_usec - startTime.tv_usec);
-            printf("Cozmmand returned with return code %d,\n", WEXITSTATUS(status));
-            printf("consuming %01d.%03d real, %01d.%03d user, %01d.%03d system seconds.\n", realsecdiff, realmicrodiff,
-                   (int) resUsage.ru_utime.tv_sec, (int) resUsage.ru_utime.tv_usec, (int) resUsage.ru_stime.tv_sec,
-                   (int) resUsage.ru_stime.tv_usec);
-=======
             double rTimeDiff, uTimeDiff, sTimeDiff;
 
             //Calculate and print different run times
@@ -160,7 +152,6 @@ int forkProcess(int redirArgC, char **redirArgV, char **rawArgV, char **cmdArgV)
 
             printf("\n[Finished with exit code %d]\n", WEXITSTATUS(exitStat));
             printf("Real: %03lfs, User: %03lfs, System: %03lfs\n", rTimeDiff, uTimeDiff, sTimeDiff);
->>>>>>> d932fba493f1aab318ceced891ca383b60523d5a
 
     }
 }
@@ -241,6 +232,7 @@ int main(int argc, char **argv) {
         execCmd(line); //Executes each command
         printf("\nkriSh $ ");
     }
+    fclose(fp); 
     free(line);
     exit(0);
 }
