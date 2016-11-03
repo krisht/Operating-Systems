@@ -1,0 +1,28 @@
+Parameter: ./HelloWorld
+Parameter: a1
+Parameter: a2
+Parameter: a3
+Parameter: a4
+Parameter: a5
+Standard Output Output
+Stdin: Input File First Line
+Stdin: Input File Second Line
+Stdin: Input File Third Line
+Stdin: Input File Fourth Line
+Stdin: Input File Fifth Line
+Stdin: Input File Last Line
+Stdin: 
+Parameter: ./HelloWorld
+Parameter: b1
+Parameter: b2
+Parameter: b3
+Parameter: b4
+Parameter: b5
+Standard Output Output
+Stdin: Input File First Line
+Stdin: Input File Second Line
+Stdin: Input File Third Line
+Stdin: Input File Fourth Line
+Stdin: Input File Fifth Line
+Stdin: Input File Last Line
+Stdin: 
