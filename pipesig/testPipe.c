@@ -24,7 +24,7 @@ int main (int argc, char** argv){
 	if (pipe2 (pfd, O_NONBLOCK) < 0)
 		exitWithError ("ERROR cannot pipe2() pfd: %s", strerror(errno));
 
-	while (write (pfd[1], "A", 1) > 0) bytes++;
+	while (write (pfd[1], "0", 1) > 0) bytes++;
 
 	if (errno == EAGAIN)
 		printf ("Size of pipe: %d\n", bytes);

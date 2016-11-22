@@ -18,7 +18,7 @@ int generateSignals(){
 	for(jj = 0; jj < 10; jj++)
 		switch(pid[jj] = fork()){
 			case -1:
-			fprintf(stderr, "ERROR fork() failed: %s\n", strerror(errno)); 
+				fprintf(stderr, "ERROR fork() failed: %s\n", strerror(errno)); 
 			case 0:
 				ppid = getppid(); 
 				for(kk = 0; kk < 1000; kk++){
@@ -27,9 +27,8 @@ int generateSignals(){
 				}
 				exit(0);
 			default: 
-			continue; 
+				continue; 
 		}
-
 
 	while(jj-- > 0)
 		wait(&wstat);
