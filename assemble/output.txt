@@ -1,0 +1,63 @@
+Krishna Thiyagarajan
+ECE-357: Operating Systems
+December 9, 2016
+Prof. Hakner
+Problem Set 7
+
+
+PROBLEM 2 OUTPUT:
+
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ as --64 part2.s -o part2.o && ld -m elf_x86_64 part2.o -o part2 && strace ./part2
+execve("./part2", ["./part2"], [/* 68 vars */]) = 0
+write(1, "Hello World!\n\0", 14)        = 14
+--- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
++++ killed by SIGSEGV (core dumped) +++
+Segmentation fault (core dumped)
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ 
+
+
+PROBLEM 3 OUTPUT: 
+
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ as --64 part3.s -o part3.o && ld -m elf_x86_64 part3.o -o part3 && strace ./part3
+execve("./part3", ["./part3"], [/* 68 vars */]) = 0
+write(1, "Hello world!\n\0", 14)        = 14
+_exit(0)                                = ?
++++ exited with 0 +++
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ 
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ echo $?
+0
+krishna@krishnaUbuntuY700:~$ 
+
+
+
+ANSWER: The SIGSEGV occurred in PROBLEM 2 because the computer tried to continue
+the program counter to execute more instructions. But since there were no
+instructions, only gibberish and no exit, the counter went past the opcode
+and began to access memory. So it got rekt big time. 
+
+
+PROBLEM 4 OUTPUT:
+ 
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ as --64 part4.s -o part4.o && ld -m elf_x86_64 part4.o -o part4 && strace ./part4
+execve("./part4", ["./part4"], [/* 68 vars */]) = 0
+setfsgid(0)                             = 1000
+_exit(0)                                = ?
++++ exited with 0 +++
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ 
+
+
+
+PROBLEM 5 OUTPUT: 
+
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ gcc part5.c -o part5 && ./part5 
+Number of iterations: 500000000
+Time Per Iteration in an Empty Loop:	1.426444 ns.
+Time Per Iteration in an Function Loop:	2.202838 ns.
+Time Per Iteration in an SysCall Loop:	52.211798 ns.
+krishna@krishnaUbuntuY700:~/Desktop/MyOs$ 
+
+ANSWER: Generally, empty loop is the fastest (duh). Then it is seen that the
+function call is faster than the syscall. Function calls are, probably faster
+because of the need to go into kernel code, execute the system call and return
+to user mode. Steps to ensure the integrity of the system needs to be taken and
+therefore, the syscall is much slower than the function call. 
