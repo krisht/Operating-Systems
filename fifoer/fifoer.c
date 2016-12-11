@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <signal.h>
+#include <stdarg.h>
 
 #include "sem.h"
 #include "fifo.h"
@@ -25,7 +26,7 @@
 struct fifo *map;
 
 void usage() {
-    fprintf(stderr, "usage: fifoer [Writers] [Bytes/Writer] [Readers] [Bytes/Reader]\n");
+    fprintf(stderr, "usage: fifoer [Writers] [Bytes/Writer] [Readers] [Bytes/Reader] [Output]\n");
     exit(EXIT_FAILURE);
 }
 
@@ -39,7 +40,7 @@ void exitWithError(const char *format, ...) {
 
 int main(int argc, char **argv) {
 
-    if (argc < 5)
+    if (argc < 6)
         usage();
 
     int numWriters = atoi(argv[1]);
@@ -58,6 +59,8 @@ int main(int argc, char **argv) {
 
     fifo_init(map);
 
+    FILE* outfp = fopen(argv[5], "w"); 
+
     int ii, jj, pid;
     unsigned long d;
 
@@ -70,7 +73,7 @@ int main(int argc, char **argv) {
                 for (jj = 1; jj <= wBytes; jj++) {
                     d = ii * 100 + jj;
                     fifo_wr(map, d);
-                    printf("Writer #%d = %lu\n", ii, d);
+                    fprintf(outfp, "Writer #%d = %lu\n", ii, d);
                 }
                 exit(0);
                 break;
@@ -86,7 +89,7 @@ int main(int argc, char **argv) {
             case 0:
                 for (jj = 0; jj < rBytes; jj++) {
                     d = fifo_rd(map);
-                    printf("\t\t\tReader #%d = %lu\n", ii, d);
+                    fprintf(outfp, "\t\t\tReader #%d = %lu\n", ii, d);
                 }
                 exit(0);
                 break;
