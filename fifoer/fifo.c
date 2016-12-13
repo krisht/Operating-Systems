@@ -8,7 +8,6 @@
  */
 
 #include <stdlib.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/mman.h>
@@ -17,22 +16,22 @@
 #include <errno.h>
 #include <signal.h>
 
-#include "fifo.h"
 #include "sem.h"
+#include "fifo.h"
 
 void fifo_init(struct fifo *f) {
-    f->head = 0;
-    f->tail = 0;
+    f->head = f->tail = 0; 
 
     sem_init(&(f->rd), 0);
     sem_init(&(f->wr), MYFIFO_BUFSIZ);
+    sem_init(&(f->access),1); 
 }
 
-void fifo_wr(struct fifo *f, unsigned long d) {
+void fifo_wr(struct fifo *f, unsigned long dWord) {
     sem_wait(&(f->wr));
     sem_wait(&(f->access));
 
-    f->buf[f->head++] = d;
+    f->buf[f->head++] = dWord;
     f->head %= MYFIFO_BUFSIZ;
 
     sem_inc(&(f->rd));
@@ -46,7 +45,7 @@ unsigned long fifo_rd(struct fifo *f) {
     sem_wait(&(f->access));
 
     rd = f->buf[f->tail++];
-    f->tail %= MYFIFO_BUFSIZ;
+    f->tail = f->tail % MYFIFO_BUFSIZ;
 
     sem_inc(&(f->wr));
     sem_inc(&(f->access));

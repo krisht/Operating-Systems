@@ -13,3 +13,4 @@ tas:
     ret
 .Lfe1:
     .size   tas,.Lfe1-tas
+    
