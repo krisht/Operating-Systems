@@ -1,0 +1,11 @@
+Part 1: 
+
+krishna@krishnaUbuntuY700:~/Dropbox/OperatingSystems/fifoer$ ./taser 
+Locked Results: 10000000/10000000
+Unlocked Results: 2353444/10000000
+krishna@krishnaUbuntuY700:~/Dropbox/OperatingSystems/fifoer$ 
+
+
+Problem 4: 
+
+Single Virtual Read and Single Virutal Write
