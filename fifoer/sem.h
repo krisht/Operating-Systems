@@ -1,6 +1,6 @@
 /**
  * Krishna Thiyagarajan
- * ECE-357: Operating Systems 
+ * ECE-357: Operating Systems
  * Prof. Jeff Hakner
  * Problem Set 6: Semaphores & FIFO
  * December 12, 2016

@@ -1,6 +1,6 @@
 /**
  * Krishna Thiyagarajan
- * ECE-357: Operating Systems 
+ * ECE-357: Operating Systems
  * Prof. Jeff Hakner
  * Problem Set 6: Semaphores & FIFO
  * December 12, 2016
@@ -14,7 +14,7 @@
 
 #include "sem.h"
 
-void sigusrhandler(int sig) {}
+void sigusrhandler(int sig) { }
 
 void sem_init(struct sem *s, int count) {
     s->count = count;
@@ -28,7 +28,7 @@ void sem_init(struct sem *s, int count) {
 int sem_try(struct sem *s) {
     while (tas(&(s->lock)));
 
-    s->lock = 0; 
+    s->lock = 0;
 
     if (s->count > 0) {
         s->count--;
@@ -43,7 +43,7 @@ void sem_wait(struct sem *s) {
     s->procID[proc_num] = getpid(); //Set proc flag to indicate wait
 
     //Loop for waiting
-    for(;;){
+    for (; ;) {
 
         while (tas(&(s->lock)));
 
@@ -60,13 +60,13 @@ void sem_wait(struct sem *s) {
         if (s->count > 0) {
             s->count--;
             s->proc_status[proc_num] = 0;
-            s->lock = 0; 
-            return; 
+            s->lock = 0;
+            return;
         }
 
-        s->lock = 0; 
-        s->proc_status[proc_num] = 1; 
-        sigsuspend(&mask); 
+        s->lock = 0;
+        s->proc_status[proc_num] = 1;
+        sigsuspend(&mask);
 
         sigprocmask(SIG_UNBLOCK, &mask, NULL);
 

@@ -1,6 +1,6 @@
 /**
  * Krishna Thiyagarajan
- * ECE-357: Operating Systems 
+ * ECE-357: Operating Systems
  * Prof. Jeff Hakner
  * Problem Set 6: Semaphores & FIFO
  * December 12, 2016
@@ -20,11 +20,11 @@
 #include "fifo.h"
 
 void fifo_init(struct fifo *f) {
-    f->head = f->tail = 0; 
+    f->head = f->tail = 0;
 
     sem_init(&(f->rd), 0);
     sem_init(&(f->wr), MYFIFO_BUFSIZ);
-    sem_init(&(f->access),1); 
+    sem_init(&(f->access), 1);
 }
 
 void fifo_wr(struct fifo *f, unsigned long dWord) {
