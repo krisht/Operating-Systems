@@ -21,14 +21,6 @@
 #define N_PROC 64
 
 
-void exitWithError(const char *format, ...) {
-    va_list arg;
-    va_start (arg, format);
-    vfprintf(stderr, format, arg);
-    va_end(arg);
-    exit(EXIT_FAILURE);
-}
-
 void usage() {
     exitWithError("Usage: fifoer [Writers] [Bytes/Writer] [Readers] [Bytes/Reader]\n");
 }

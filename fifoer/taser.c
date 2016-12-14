@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <stdarg.h>
 
 #define N_PROC 10
 #define N_REPEATS 1000000
