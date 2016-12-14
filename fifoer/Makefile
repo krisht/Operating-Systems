@@ -1,4 +1,4 @@
-fifoer: fifoer.o sem.o fifo.o taser.o
+all: fifoer.o sem.o fifo.o taser.o
 	gcc -o fifoer.exe fifoer.o sem.o fifo.o tas64.s
 	gcc -o taser.exe taser.o tas64.s
 
@@ -17,4 +17,4 @@ debug:
 	gcc -o fifo_debug.exe -g fifoer.c fifo.c sem.c tas64.s
 
 clean:
-	rm *.exe *.o *.stackdump *~
+	rm *.exe *.o
