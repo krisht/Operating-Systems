@@ -1,7 +1,5 @@
-fifoer: fifoer.o sem.o fifo.o
-	gcc -o fifoer fifoer.o sem.o fifo.o tas64.s
-
-taser: taser.o
+fifoer: fifoer.o sem.o fifo.o taser.o
+	gcc -o fifoer.exe fifoer.o sem.o fifo.o tas64.s
 	gcc -o taser taser.o tas64.s
 
 fifoer.o: fifoer.c fifo.h

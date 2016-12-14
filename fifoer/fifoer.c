@@ -20,10 +20,6 @@
 
 #define N_PROC 64
 
-void usage() {
-    fprintf(stderr, "Usage: fifoer [Writers] [Bytes/Writer] [Readers] [Bytes/Reader] [Output]\n");
-    exit(EXIT_FAILURE);
-}
 
 void exitWithError(const char *format, ...) {
     va_list arg;
@@ -33,9 +29,13 @@ void exitWithError(const char *format, ...) {
     exit(EXIT_FAILURE);
 }
 
+void usage() {
+    exitWithError("Usage: fifoer [Writers] [Bytes/Writer] [Readers] [Bytes/Reader]\n");
+}
+
 int main(int argc, char **argv) {
 
-    if (argc < 6)
+    if (argc < 5)
         usage();
 
     int numWriters = atoi(argv[1]);
@@ -54,16 +54,27 @@ int main(int argc, char **argv) {
 
     fifo_init(map);
 
-    FILE *outfp = fopen(argv[5], "w"); 
-
     int ii, jj, pid;
     unsigned long d;
+
+    for (ii = 1; ii <= numReaders; ii++)
+        switch (pid = fork()) {
+            case -1:
+                exitWithError("Error encountered on fork on reader with code %d: %s\n", errno, strerror(errno));
+            case 0:
+                for (jj = 0; jj < rBytes; jj++) {
+                    d = fifo_rd(map);
+                    fprintf(outfp, "\t\t\t\t\tReader #%d = %lu\n", ii, d);
+                }
+                exit(0);
+            default:
+                continue;
+        }
 
     for (ii = 1; ii <= numWriters; ii++)
         switch (pid = fork()) {
             case -1:
                 exitWithError("Error encountered on fork on writer with code %d: %s\n", errno, strerror(errno));
-                break;
             case 0:
                 for (jj = 1; jj <= wBytes; jj++) {
                     d = ii * 100 + jj;
@@ -71,23 +82,6 @@ int main(int argc, char **argv) {
                     fprintf(outfp, "Writer #%d = %lu\n", ii, d);
                 }
                 exit(0);
-                break;
-            default:
-                continue;
-        }
-
-    for (ii = 1; ii <= numReaders; ii++)
-        switch (pid = fork()) {
-            case -1:
-                exitWithError("Error encountered on fork on reader with code %d: %s\n", errno, strerror(errno));
-                break;
-            case 0:
-                for (jj = 0; jj < rBytes; jj++) {
-                    d = fifo_rd(map);
-                    fprintf(outfp, "\t\t\t\t\tReader #%d = %lu\n", ii, d);
-                }
-                exit(0);
-                break;
             default:
                 continue;
         }

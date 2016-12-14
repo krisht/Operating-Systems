@@ -75,6 +75,7 @@ void sem_wait(struct sem *s) {
 
 void sem_inc(struct sem *s) {
     while (tas(&(s->lock))); //Get a lock
+    
     s->count++;
 
     //Wake up sleeping processes

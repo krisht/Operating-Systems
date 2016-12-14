@@ -22,15 +22,21 @@
 
 int tas(volatile char *lock);
 
+void exitWithError(const char *format, ...) {
+    va_list arg;
+    va_start (arg, format);
+    vfprintf(stderr, format, arg);
+    va_end(arg);
+    exit(EXIT_FAILURE);
+}
+
 int main(int argc, char **argv) {
 
     int *locked = (int *) mmap(NULL, 5, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     int *unlocked = (int *) mmap(NULL, 5, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    if (locked == MAP_FAILED || unlocked == MAP_FAILED) {
-        fprintf(stderr, "Error trying to create shared map with code %d: %s\n", errno, strerror(errno));
-        exit(-1);
-    }
+    if (locked == MAP_FAILED || unlocked == MAP_FAILED)
+        exitWithError("Error trying to create shared map with code %d: %s\n", errno, strerror(errno));
 
     char *lock = (char *) unlocked++;
     *locked = 0;
@@ -58,6 +64,7 @@ int main(int argc, char **argv) {
             }
             exit(0);
         }
+
     while (wait(NULL) > 0);
 
     printf("Locked Results: %d/%d\n", *locked, N_PROC * N_REPEATS);
