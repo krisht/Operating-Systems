@@ -14,6 +14,14 @@
 
 #include "sem.h"
 
+void exitWithError(const char *format, ...) {
+    va_list arg;
+    va_start (arg, format);
+    vfprintf(stderr, format, arg);
+    va_end(arg);
+    exit(EXIT_FAILURE);
+}
+
 void sigusrhandler(int sig) { }
 
 void sem_init(struct sem *s, int count) {
@@ -52,10 +60,18 @@ void sem_wait(struct sem *s) {
 
         sigset_t mask, omask;
 
-        sigfillset(&mask);
-        sigdelset(&mask, SIGINT);
-        sigdelset(&mask, SIGUSR1);
-        sigprocmask(SIG_BLOCK, &mask, &omask); //Wait for signal while blocking
+
+        if(sigfillset(&mask) != 0)
+            exitWithError("Error building new mask with code %d: %s\n", errno, strerror(errno));
+
+        if(sigdelset(&mask, SIGINT) != 0 )
+            exitWithError("Error enabling SIGINT with code %d: %s\n", errno, strerror(errno));
+
+        if(sigdelset(&mask, SIGUSR1) != 0)
+            exitWithError("Error enabling SIGUSR1 with code %d: %s\n", errno, strerror(errno));
+
+        if(sigprocmask(SIG_BLOCK, &mask, &omask) !=0)
+            exitWithError("Error when trying to block with code %d: %s\n", errno, strerror(errno));
 
         if (s->count > 0) {
             s->count--;
@@ -66,23 +82,26 @@ void sem_wait(struct sem *s) {
 
         s->lock = 0;
         s->proc_status[proc_num] = 1;
+        
         sigsuspend(&mask);
 
-        sigprocmask(SIG_UNBLOCK, &mask, NULL);
+        if(sigprocmask(SIG_UNBLOCK, &mask, NULL) != 0)
+            exitWithError("Error when trying to unblock with code %d: %s\n", errno, strerror(errno));
 
     }
 }
 
 void sem_inc(struct sem *s) {
     while (tas(&(s->lock))); //Get a lock
-    
+
     s->count++;
 
     //Wake up sleeping processes
     int ii;
     for (ii = 0; ii < N_PROC; ii++)
         if (s->proc_status[ii])
-            kill(s->procID[ii], SIGUSR1);
+            if(kill(s->procID[ii], SIGUSR1) !=0)
+                exitWithError("Error killing process with pid %d with code %d: %s\n", s->procID[ii], errno, strerror(errno));
 
     s->lock = 0; // Unlock
 }

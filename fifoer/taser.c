@@ -45,10 +45,12 @@ int main(int argc, char **argv) {
     int pid, ii;
 
     for (pid = 0; pid < N_PROC; pid++)
-        if (fork() == 0) {
-            for (ii = 0; ii < N_REPEATS; ii++)
-                (*unlocked)++;
-            exit(0);
+        switch(fork()){
+            case -1: exitWithError("Error encountered on fork on reader with code %d: %s\n", errno, strerror(errno)); 
+            case 0: 
+                for (ii = 0; ii < N_REPEATS; ii++)
+                    (*unlocked)++;
+                exit(0);    
         }
 
     while (wait(NULL) > 0);
@@ -56,13 +58,15 @@ int main(int argc, char **argv) {
     *lock = 0;
 
     for (pid = 0; pid < N_PROC; pid++)
-        if (fork() == 0) {
-            for (ii = 0; ii < N_REPEATS; ii++) {
-                while (tas(lock) == 1);
-                (*locked)++;
-                *lock = 0;
-            }
-            exit(0);
+        switch(fork()){
+            case -1: exitWithError("Error encountered on fork on reader with code %d: %s\n", errno, strerror(errno)); 
+            case 0: 
+                for (ii = 0; ii < N_REPEATS; ii++) {
+                    while (tas(lock) == 1);
+                    (*locked)++;
+                    *lock = 0;
+                }
+                exit(0); 
         }
 
     while (wait(NULL) > 0);
