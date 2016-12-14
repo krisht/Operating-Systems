@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
             case 0:
                 for (jj = 0; jj < rBytes; jj++) {
                     d = fifo_rd(map);
-                    fprintf(outfp, "\t\t\t\t\tReader #%d = %lu\n", ii, d);
+                    fprintf(outfp, "\t\t\tR-%d = %lu\n", ii, d);
                 }
                 exit(0);
             default:
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
                 for (jj = 1; jj <= wBytes; jj++) {
                     d = ii * 100 + jj;
                     fifo_wr(map, d);
-                    fprintf(outfp, "Writer #%d = %lu\n", ii, d);
+                    fprintf(outfp, "W-%d = %lu\n", ii, d);
                 }
                 exit(0);
             default:
