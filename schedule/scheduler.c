@@ -235,17 +235,17 @@ int sched_gettick(){
 }
 
 void sched_ps() {
-	printf("PID     PPID    STATE   STACK           NICE    DYNAMIC   TIME \n");
+	retWithError("PID     PPID    STATE   STACK           NICE    DYNAMIC   TIME \n");
 	int ii;
 	for (ii = 0; ii < SCHED_NPROC; ii++)
 		if (running->procQueue[ii]){
-			printf("%d\t", running->procQueue[ii]->pid);
-			printf("%d\t", running->procQueue[ii]->ppid);
-			printf("%d\t", running->procQueue[ii]->state);
-			printf("%x\t", running->procQueue[ii]->sp);
-			printf("%d\t", running->procQueue[ii]->niceval);
-			printf("%d\t", running->procQueue[ii]->priority);
-			printf("%d\n", running->procQueue[ii]->timestart);
+			retWithError("%d\t", running->procQueue[ii]->pid);
+			retWithError("%d\t", running->procQueue[ii]->ppid);
+			retWithError("%d\t", running->procQueue[ii]->state);
+			retWithError("%x\t", running->procQueue[ii]->sp);
+			retWithError("%d\t", running->procQueue[ii]->niceval);
+			retWithError("%d\t", running->procQueue[ii]->priority);
+			retWithError("%d\n", running->procQueue[ii]->timestart);
 		}
 }
 
