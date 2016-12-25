@@ -1,8 +1,15 @@
-#ifndef SCHED_H
-#define SCHED_H
+/**
+ * Krishna Thiyagarajan
+ * Scheduler
+ * scheduler.h
+ * 12/25/2016
+ */
 
-#define SCHED_NPROC  256 
 
+#ifndef SCHEDULER_H
+#define SCHEDULER_H
+
+#define SCHED_NPROC  256
 #define SCHED_READY 0
 #define SCHED_RUNNING 1
 #define SCHED_SLEEPING 2
@@ -11,48 +18,48 @@
 #define DEFAULT_PR 20
 
 #include <stdarg.h>
-
 #include "jmpbuf-offsets64.h"
 
-
-struct savectx{
-	void *regs[JB_SIZE];
+struct savectx {
+    void *regs[JB_SIZE];
 };
 
-struct sched_proc{
-	int pid, ppid; 
-	void *sp;			// stack pointer
-	int state, priority; // task state & priority
-	int timestart; 		// delta t for process
-	int ticksCPU;		// number of cpu ticks with process
-	int exitcode; 		// exit code/return value of process
-	int niceval; 		// nice level of process
-	int endtickcount; 	//stores lsat tick count when process is switched
-	struct savectx ctx; 
-	struct sched_proc *parent; //parent proc
+struct sched_proc {
+    int pid;
+    int ppid;
+    void *sp;
+    int state;
+    int priority;
+    int procTime;
+    int cpuTime;
+    int exitcode;
+    int niceval;
+    int lastTick;
+    struct savectx ctx;
+    struct sched_proc *parent;
 };
 
 
-struct sched_waitq{
-	struct sched_proc *procQueue[SCHED_NPROC];
-	int numprocs;
+struct sched_waitq {
+    struct sched_proc *procQueue[SCHED_NPROC];
+    int countProcs;
 };
 
-struct sched_proc *currProc; //Current process
-struct sched_waitq *running; //Running queue
+struct sched_proc *currProc;
+struct sched_waitq *running;
 
-int numPID, numTicks;
+int numPid, numTicks;
 int resched;
 
-int retWithError(const char *format, ...); 
+int retWithError(const char *format, ...);
 
 void sched_init(void (*init_fn)());
 
 int sched_fork();
 
-void sched_exit(int code);
+void sched_exit(int ecode);
 
-int sched_wait(int *code);
+int sched_wait(int *ecode);
 
 void sched_nice(int niceval);
 
