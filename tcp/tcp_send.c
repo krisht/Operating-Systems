@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
     char buff[BUFF_SIZE], *writeBuff;
     unsigned short port;
 
-    int sock, rBytes, wBytes, numBytes;
+    int sock, rBytes, wBytes, numBytes = 0;
     double startTime, endTime, rate;
 
     hostName = argv[1];
@@ -66,6 +66,8 @@ int main(int argc, char **argv) {
     if (connect(sock, (struct sockaddr *) &sockIn, sizeof(sockIn)) < 0)
         return err("Error connecting to socket with code %d: %s\n", errno, strerror(errno));
 
+    err("Connected to Socket!\n");
+
     gettimeofday(&start, NULL);
 
     while ((rBytes = (int) read(STDIN_FILENO, buff, BUFF_SIZE)) <= 0) {
@@ -75,7 +77,7 @@ int main(int argc, char **argv) {
         writeBuff = buff;
 
         for (wBytes = 0; wBytes < rBytes;) {
-            if ((wBytes = (int) write(sock, writeBuff, rBytes)) <= 0)
+            if ((wBytes = (int) write(sock, writeBuff, (unsigned int) rBytes)) <= 0)
                 err("Error writing to socket with code %d: %s\n", errno, strerror(errno));
             rBytes -= wBytes;
             writeBuff += wBytes;
@@ -92,5 +94,7 @@ int main(int argc, char **argv) {
     startTime = start.tv_sec + (double) start.tv_usec / 1000000;
     rate = numBytes / ((endTime - startTime) * 1024 * 1024);
 
-    fprintf(stderr, "\n\nWrote %d bytes at a rate of %.6f MB/s\n", numBytes, rate);
+    err("\n\nWrote %d bytes at a rate of %.6f MB/s\n", numBytes, rate);
+
+    return EXIT_SUCCESS;
 }
