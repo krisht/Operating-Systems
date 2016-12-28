@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -9,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <sys/time.h>
 
 #define BUFF_SIZE 4096
 
@@ -28,7 +28,7 @@ void usage() {
 
 int main(int argc, char **argv) {
 
-    if (argc != 4)
+    if (argc != 3)
         usage();
 
     struct hostent *hostEntry;
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
     if ((sockIn.sin_addr.s_addr = inet_addr(hostName)) == -1) {
         if (!(hostEntry = gethostbyname(hostName)))
             return err("Error with given hostname (unknown) with code %d: %s\n", errno, strerror(errno));
-        memcpy((void *) sockIn.sin_addr.s_addr, hostEntry->h_addr_list[0], sizeof(sockIn.sin_addr.s_addr));
+        memcpy(&sockIn.sin_addr.s_addr, hostEntry->h_addr_list[0], sizeof(sockIn.sin_addr.s_addr));
     }
 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -70,15 +70,15 @@ int main(int argc, char **argv) {
 
     gettimeofday(&start, NULL);
 
-    while ((rBytes = (int) read(STDIN_FILENO, buff, BUFF_SIZE)) <= 0) {
+    while ((rBytes = (int) read(STDIN_FILENO, buff, BUFF_SIZE)) != 0) {
         if (rBytes < 0)
-            err("Error on reading from input with code %d: %s\n", errno, strerror(errno));
+            return err("Error on reading from input with code %d: %s\n", errno, strerror(errno));
 
         writeBuff = buff;
 
         for (wBytes = 0; wBytes < rBytes;) {
             if ((wBytes = (int) write(sock, writeBuff, (unsigned int) rBytes)) <= 0)
-                err("Error writing to socket with code %d: %s\n", errno, strerror(errno));
+                return err("Error writing to socket with code %d: %s\n", errno, strerror(errno));
             rBytes -= wBytes;
             writeBuff += wBytes;
             numBytes += wBytes;
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
     }
 
     if (close(sock) < 0)
-        err("Error on closing socket with code %d: %s\n", errno, strerror(errno));
+        return err("Error on closing socket with code %d: %s\n", errno, strerror(errno));
 
     gettimeofday(&end, NULL);
 
