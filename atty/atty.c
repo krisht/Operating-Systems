@@ -8,7 +8,7 @@
 #include <termios.h>
 #include <ctype.h>
 
-#define BUFF_SIZE 128
+#define BUFF_SIZE 33
 
 struct termios saved; 
 
@@ -20,30 +20,33 @@ int isSpace(char c);
 int myread(char* buff, int count); 
 
 int main(int argc, char **argv) {
-	char c; 
+	char c;
 	char buff[BUFF_SIZE];
-	int count = BUFF_SIZE - 1 ; 
+	int count = BUFF_SIZE - 1 ;
+	int readlen = 0; 
 	setInputMode();
-	while (myread(buff, count))
+	while (readlen = myread(buff, count)){
 		printf("\n");
+		fprintf(stderr, "Length: %d : %s\n", readlen, buff); 
+	}
+
 	return 0;
 }
 
-
 int myread(char* buff, int count){
+
 	char c; 
-	int ii, len = 0; 
+	int len = 0; 
 	memset(buff, '\0', BUFF_SIZE); 
 
-	char deleteOne[4] = "\b \b\0";
+	char deleteOne[4] = "\b \b\0"; //Doesn't delete properly w/o null term
 
-	while(read(STDIN_FILENO, &c, 1) > 0){
+	while(read(STDIN_FILENO, &c, 1) > 0){ 
 
 		if(count > BUFF_SIZE - 1)
 			count = BUFF_SIZE - 1;  
 		else if(count < 0)
-			count = 1; 
-
+			count = 1;
 		switch(c){
 			case CERASE: {
 				if(!len) 
@@ -74,7 +77,7 @@ int myread(char* buff, int count){
 				break; 
 			}
 			case CEOF:{
-				return -len;
+				return len;
 				break; 
 			}
 			case '\n': {
@@ -90,12 +93,12 @@ int myread(char* buff, int count){
 		if(strlen(buff) == count)
 			return len;
 	}
-	return -len; 
+	return len; 
 }
 
 void resetInputMode(){
 	if(tcsetattr (STDIN_FILENO, TCSANOW, &saved) == -1)
-		exit(err("Error on resetting to original mode with code %d: %s\n", errno,strerror(errno))); 
+		exit(err("Error on resetting to original (saved) mode with code %d: %s\n", errno,strerror(errno))); 
 }
 
 void setInputMode(){
@@ -103,10 +106,10 @@ void setInputMode(){
 	char *name; 
 
 	if(!isatty(STDIN_FILENO))
-		exit(err("Error on using STDIN as tty!\n"));
+		exit(err("Error on using STDIN as tty with code %d: %s\n", errno, strerror(errno)));
 
 	if(tcgetattr(STDIN_FILENO, &saved) == -1)
-		exit(err("ERror on tcgetattr with code %d: %s\n", errno, strerror(errno)));
+		exit(err("Error on tcgetattr to save original settings with code %d: %s\n", errno, strerror(errno)));
 	atexit(resetInputMode); 
 	
 	tcgetattr(STDIN_FILENO, &tattr); 
@@ -115,7 +118,7 @@ void setInputMode(){
 	tattr.c_cc[VTIME] = 0; 
 
 	if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &tattr) == -1)
-		exit(err("Error on tcsetattr with code %d: %s\n", errno, strerror(errno))); 
+		exit(err("Error on tcsetattr to set to terminal to non-canonical mode with code %d: %s\n", errno, strerror(errno))); 
 }
 
 int err(const char *format, ...) {
@@ -132,5 +135,5 @@ void usage() {
 }
 
 int isSpace(char c){
-	return (c == ' ' || c == '\t' || c == '\n' c == '\v' || c == '\r' || c='\f');
+	return (c == ' ' || c == '\t' ); //|| c == '\n' || c == '\v' || c == '\r' || c=='\f');
 }
