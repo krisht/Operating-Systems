@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define BUFF_SIZE 4096
+#define BUFF_SIZE 2048
 
 int err(const char *format, ...) {
     va_list arg;
@@ -35,12 +35,11 @@ int main(int argc, char **argv) {
     struct sockaddr_in sockIn;
     struct timeval start, end;
     char buff[BUFF_SIZE], *writeBuff;
-    unsigned short port;
     int sock1, sock2, rBytes, wBytes, numBytes = 0, len = sizeof(sockIn);
 
     double start_time, end_time, rate;
 
-    port = (unsigned short) atoi(argv[1]);
+    unsigned short port = (unsigned short) atoi(argv[1]);
 
     sockIn.sin_family = AF_INET;
     sockIn.sin_port = htons(port);

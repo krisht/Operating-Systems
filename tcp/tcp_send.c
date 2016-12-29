@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define BUFF_SIZE 4096
+#define BUFF_SIZE 2048 //Default size for sending through TCP socket
 
 int err(const char *format, ...) {
     va_list arg;
@@ -31,19 +31,17 @@ int main(int argc, char **argv) {
     if (argc != 3)
         usage();
 
-    struct hostent *hostEntry;
-    struct sockaddr_in sockIn;
-    struct linger sockLinger;
-    struct timeval start, end;
-    const char *hostName;
+    struct hostent *hostEntry;       
+    struct sockaddr_in sockIn;      
+    struct linger sockLinger;       
+    struct timeval start, end;      
     char buff[BUFF_SIZE], *writeBuff;
-    unsigned short port;
 
-    int sock, rBytes, wBytes, numBytes = 0;
     double startTime, endTime, rate;
+    int sock, rBytes, wBytes, numBytes = 0;
 
-    hostName = argv[1];
-    port = (unsigned short) atoi(argv[2]);
+    const char *hostName = argv[1];
+    unsigned short port = (unsigned short) atoi(argv[2]);
 
     sockIn.sin_family = AF_INET;
     sockIn.sin_port = htons(port);
