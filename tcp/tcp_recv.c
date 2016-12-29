@@ -47,28 +47,28 @@ int main(int argc, char **argv) {
 
 
     if ((sock1 = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        return err("Error on opening socket with code %d: %s\n", errno, strerror(errno));
+        return err("Error on opening socket 1 with code %d: %s\n", errno, strerror(errno));
 
     if (bind(sock1, (struct sockaddr *) &sockIn, sizeof(sockIn)) < 0) {
         close(sock1);
-        return err("Error on binding socket with code %d: %s\n", errno, strerror(errno));
+        return err("Error on binding socket 1 with code %d: %s\n", errno, strerror(errno));
     }
 
     if (listen(sock1, 128) < 0)
         return err("Error on listening to socket 1 with code %d: %s\n", errno, strerror(errno));
 
-    err("Listening to socket for a connection!");
+    err("Listening...\n");
 
     if ((sock2 = accept(sock1, (struct sockaddr *) &sockIn, (unsigned int *) &len)) < 0)
-        return err("Error on accepting connection to socket with code %d: %s\n", errno, strerror(errno));
+        return err("Error on accepting connection to socket 2 with code %d: %s\n", errno, strerror(errno));
 
-    err("Accepted socket connection....");
+    err("Connected...\n");
 
     gettimeofday(&start, NULL);
 
     while ((rBytes = (int) read(sock2, buff, BUFF_SIZE)) != 0) {
         if (rBytes < 0)
-            return err("Error on reading from socket with code %d: %s\n", errno, strerror(errno));
+            return err("Error on reading from socket 2 with code %d: %s\n", errno, strerror(errno));
         writeBuff = buff;
 
         for (wBytes = 0; wBytes < rBytes;) {
@@ -82,23 +82,23 @@ int main(int argc, char **argv) {
     }
 
     if (close(sock2) < 0)
-        return err("Error when closing socket with code %d: %s\n", errno, strerror(errno));
+        return err("Error when closing socket 2 with code %d: %s\n", errno, strerror(errno));
 
     gettimeofday(&end, NULL);
     end_time = end.tv_sec + (double) end.tv_usec / 1000000;
     start_time = start.tv_sec + (double) start.tv_usec / 1000000;
     rate = numBytes / ((end_time - start_time) * 1024 * 1024);
-    err("\n\nRemote Endpoint Info: \n\tIP Address: %s\n\tPort: %d\n", inet_ntoa(sockIn.sin_addr),
-        ntohs(sockIn.sin_port));
 
     if ((hostEntry = gethostbyaddr(&sockIn.sin_addr, sizeof(sockIn.sin_addr), AF_INET)))
-        err("\tHostname: %s\n", hostEntry->h_name);
-    else err("\tHostname: unknown\n");
+        err("End Hostname: %s\n", hostEntry->h_name);
+    else err("End Hostname: unknown\n");
+    err("End IP Address: %s\nEnd Port: %d\n", inet_ntoa(sockIn.sin_addr),
+        ntohs(sockIn.sin_port));
 
-    err("\n\nReceived %d bytes at a rate of %.6f MB/s\n", numBytes, rate);
+    err("Received %d bytes\nTransfer Rate: %.6f MB/s\n", numBytes, rate);
 
     if (close(sock1) < 0)
-        err("Error on closing socket with code %d: %s\n", errno, strerror(errno));
+        err("Error on closing socket 1 with code %d: %s\n", errno, strerror(errno));
 
     return EXIT_SUCCESS;
 }

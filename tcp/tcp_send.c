@@ -31,10 +31,10 @@ int main(int argc, char **argv) {
     if (argc != 3)
         usage();
 
-    struct hostent *hostEntry;       
-    struct sockaddr_in sockIn;      
-    struct linger sockLinger;       
-    struct timeval start, end;      
+    struct hostent *hostEntry;
+    struct sockaddr_in sockIn;
+    struct linger sockLinger;
+    struct timeval start, end;
     char buff[BUFF_SIZE], *writeBuff;
 
     double startTime, endTime, rate;
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
     if (connect(sock, (struct sockaddr *) &sockIn, sizeof(sockIn)) < 0)
         return err("Error connecting to socket with code %d: %s\n", errno, strerror(errno));
 
-    err("Connected to Socket!\n");
+    err("Connected...\n");
 
     gettimeofday(&start, NULL);
 
@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
     startTime = start.tv_sec + (double) start.tv_usec / 1000000;
     rate = numBytes / ((endTime - startTime) * 1024 * 1024);
 
-    err("\n\nWrote %d bytes at a rate of %.6f MB/s\n", numBytes, rate);
+    err("Sent %d bytes\nTransfer Rate: %.6f MB/s\n", numBytes, rate);
 
     return EXIT_SUCCESS;
 }
