@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     struct timeval start, end;
     char buff[BUFF_SIZE], *writeBuff;
     unsigned short port;
-    int sock1, sock2, rBytes, wBytes, numBytes = 0, len =sizeof(sockIn);
+    int sock1, sock2, rBytes, wBytes, numBytes = 0, len = sizeof(sockIn);
 
     double start_time, end_time, rate;
 
@@ -72,13 +72,13 @@ int main(int argc, char **argv) {
             return err("Error on reading from socket with code %d: %s\n", errno, strerror(errno));
         writeBuff = buff;
 
-        for (wBytes = 0; wBytes < rBytes;){
+        for (wBytes = 0; wBytes < rBytes;) {
             if ((wBytes = (int) write(STDOUT_FILENO, writeBuff, (unsigned int) rBytes)) <= 0)
                 err("Error on writing to stdout with code %d: %s\n", errno, strerror(errno));
 
-            rBytes-=wBytes; 
-            writeBuff+=wBytes;
-            numBytes+=wBytes; 
+            rBytes -= wBytes;
+            writeBuff += wBytes;
+            numBytes += wBytes;
         }
     }
 
