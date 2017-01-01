@@ -42,7 +42,7 @@ void setInputMode() {
 
     if (tcgetattr(STDIN_FILENO, &saved) == -1)
         exit(err("Error on tcgetattr to save original settings with code %d: %s.\n", errno, strerror(errno)));
-    
+
     atexit(resetInputMode);
 
     tcgetattr(STDIN_FILENO, &tattr);
@@ -61,7 +61,7 @@ int myread() {
 
     memset(buff, '\0', BUFF_SIZE); // Initialize the buffer to nulls
 
-    char deleteOne[3] = "\b \b"; //"Deleting" on the tty
+    char deleteOne[3] = "\b \b"; //"Deleting" on the terminal
 
     while (read(STDIN_FILENO, &c, 1) > 0) { //Read EOF condition
         switch (c) {
@@ -73,7 +73,7 @@ int myread() {
                 break;
             }
             case CWERASE: {
-            	// Delete spaces before word
+                // Delete spaces before word
                 while (len && (isSpace(buff[len]) || buff[len] == '\0')) {
                     buff[len--] = '\0';
                     write(STDOUT_FILENO, deleteOne, strlen(deleteOne));
@@ -108,7 +108,7 @@ int myread() {
             }
         }
         if (strlen(buff) == count) //Buffer overloaded
-            break; 
+            break;
     }
     return len;
 }
@@ -116,7 +116,7 @@ int myread() {
 int main(int argc, char **argv) {
     int readlen = 0;
     setInputMode();
-    while ((readlen = myread())){
+    while ((readlen = myread())) {
         fprintf(stderr, "\nLength: %d : '%s'\n", readlen, buff);
     }
     return 0;
